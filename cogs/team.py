@@ -41,13 +41,13 @@ class MainView(discord.ui.View):
 
         old_red_embed.clear_fields()
         for user in self.team_list["red"]:
-            old_red_embed.add_field(name=f'・{self.valo_name_dict.get(str(user.id))}', value=f'{user.mention}')
+            old_red_embed.add_field(name=f'・{self.valo_name_dict.get(str(user.id))}', value=f'{user.mention}', inline=False)
 
         if interaction.user in self.team_list["blue"]:
             old_blue_embed.clear_fields()
             self.team_list["blue"].remove(interaction.user)
             for user in self.team_list["blue"]:
-                old_blue_embed.add_field(name=f'・{self.valo_name_dict.get(str(user.id))}', value=f'{user.mention}')
+                old_blue_embed.add_field(name=f'・{self.valo_name_dict.get(str(user.id))}', value=f'{user.mention}', inline=False)
 
         await interaction.message.edit(embeds=[old_red_embed, old_blue_embed], view=self)
         return True
@@ -63,13 +63,13 @@ class MainView(discord.ui.View):
 
         old_blue_embed.clear_fields()
         for user in self.team_list["blue"]:
-            old_blue_embed.add_field(name=f'・{self.valo_name_dict.get(str(user.id))}', value=f'{user.mention}')
+            old_blue_embed.add_field(name=f'・{self.valo_name_dict.get(str(user.id))}', value=f'{user.mention}', inline=False)
 
         if interaction.user in self.team_list["red"]:
             old_red_embed.clear_fields()
             self.team_list["red"].remove(interaction.user)
             for user in self.team_list["red"]:
-                old_red_embed.add_field(name=f'・{self.valo_name_dict.get(str(user.id))}', value=f'{user.mention}')
+                old_red_embed.add_field(name=f'・{self.valo_name_dict.get(str(user.id))}', value=f'{user.mention}', inline=False)
 
         await interaction.message.edit(embeds=[old_red_embed, old_blue_embed], view=self)
         return True
