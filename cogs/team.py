@@ -85,9 +85,9 @@ class MainView(discord.ui.View):
                     try:
                         await member.move_to(vc_ch)
                     except Exception:
-                        await interaction.response.send_message(f'Error >> {member.mention} は移動できませんでした。')
+                        await interaction.message.channel.send(f'Error >> {member.mention} は移動できませんでした。')
                 else:
-                    await interaction.response.send_message(f'Warning >> {member.mention} は自分で{vc_ch.mention}に参加してください。')
+                    await interaction.message.channel.send(f'Warning >> {member.mention} は自分で{vc_ch.mention}に参加してください。')
         self.stop()
         red_context = "ㅤ・\n".join([self.valo_name_dict.get(str(m.id)) for m in self.team_list.get("red")]) if self.team_list.get("red") else "なし"
         blue_context = "ㅤ・\n".join([self.valo_name_dict.get(str(m.id)) for m in self.team_list.get("blue")]) if self.team_list.get("blue") else "なし"
