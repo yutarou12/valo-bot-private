@@ -20,6 +20,28 @@ class Team(commands.Cog):
         view = MainView()
         await interaction.response.send_message(embeds=[red_embed, blue_embed], view=view)
 
+    @app_commands.command(name='ゲーム終了')
+    @app_commands.guild_only()
+    async def cmd_end(self, interaction: discord.Interaction):
+        """VCを終了"""
+
+        ch_id = 1122211898398621770
+        second_id = 1122211898398621771
+
+        vc_ch: discord.VoiceChannel = interaction.guild.get_channel(ch_id)
+        second_id_ch: discord.VoiceChannel = interaction.guild.get_channel(second_id)
+
+        for member in second_id_ch.members:
+            if member.voice:
+                try:
+                    await member.move_to(vc_ch)
+                except Exception:
+                    await interaction.message.channel.send(f'Error >> {member.mention} は移動できませんでした。')
+            else:
+                await interaction.message.channel.send(f'Warning >> {member.mention} は自分で{vc_ch.mention}に参加してください。')
+
+        return await interaction.response.send_message('集合！！！！！')
+
 
 class MainView(discord.ui.View):
     def __init__(self):
@@ -92,6 +114,7 @@ class MainView(discord.ui.View):
         red_context = "ㅤ・\n".join([self.valo_name_dict.get(str(m.id)) for m in self.team_list.get("red")]) if self.team_list.get("red") else "なし"
         blue_context = "ㅤ・\n".join([self.valo_name_dict.get(str(m.id)) for m in self.team_list.get("blue")]) if self.team_list.get("blue") else "なし"
         return await interaction.response.send_message(f'VCを分けました。\n\n>> **アタッカー側**\n{red_context}\n>> **ディフェンダー側**\n{blue_context}')
+
 
 
 async def setup(bot):
