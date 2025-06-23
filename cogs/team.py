@@ -25,8 +25,8 @@ class Team(commands.Cog):
     async def cmd_end(self, interaction: discord.Interaction):
         """VCを終了"""
 
-        ch_id = 1122211898398621770
-        second_id = 1122211898398621771
+        ch_id = 1378713691578699837
+        second_id = 1378713734624841889
 
         vc_ch: discord.VoiceChannel = interaction.guild.get_channel(ch_id)
         second_id_ch: discord.VoiceChannel = interaction.guild.get_channel(second_id)
