@@ -98,7 +98,7 @@ class MainView(discord.ui.View):
 
     @discord.ui.button(label='VCを分ける', style=discord.ButtonStyle.danger, custom_id='team_end_button')
     async def team_wakeru(self, interaction: discord.Interaction, button: discord.ui.Button):
-        ch_id = {"red": 1122211898398621770, "blue": 1122211898398621771}
+        ch_id = {"red": 1378713691578699837, "blue": 1378713734624841889}
 
         for color in ["red", "blue"]:
             for member in self.team_list[color]:
@@ -111,10 +111,9 @@ class MainView(discord.ui.View):
                 else:
                     await interaction.message.channel.send(f'Warning >> {member.mention} は自分で{vc_ch.mention}に参加してください。')
         self.stop()
-        red_context = "ㅤ・\n".join([self.valo_name_dict.get(str(m.id)) for m in self.team_list.get("red")]) if self.team_list.get("red") else "なし"
-        blue_context = "ㅤ・\n".join([self.valo_name_dict.get(str(m.id)) for m in self.team_list.get("blue")]) if self.team_list.get("blue") else "なし"
+        red_context = "ㅤ\n".join([self.valo_name_dict.get(str(m.id)) for m in self.team_list.get("red")]) if self.team_list.get("red") else "なし"
+        blue_context = "ㅤ\n".join([self.valo_name_dict.get(str(m.id)) for m in self.team_list.get("blue")]) if self.team_list.get("blue") else "なし"
         return await interaction.response.send_message(f'VCを分けました。\n\n>> **アタッカー側**\n{red_context}\n>> **ディフェンダー側**\n{blue_context}')
-
 
 
 async def setup(bot):
