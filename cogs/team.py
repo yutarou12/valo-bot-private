@@ -1,5 +1,8 @@
 import json
 
+import cv2
+import numpy as np
+
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -19,6 +22,43 @@ class Team(commands.Cog):
 
         view = MainView()
         await interaction.response.send_message(embeds=[red_embed, blue_embed], view=view)
+
+    @app_commands.command(name='チーム分け2')
+    @app_commands.guild_only()
+    async def cmd_team_2(self, interaction: discord.Interaction, input_image: discord.Attachment):
+        """画像によるチーム分けを行います。"""
+
+        red_embed = discord.Embed(title='アタッカー側', color=discord.Color.red())
+        blue_embed = discord.Embed(title='ディフェンダー側', color=discord.Color.blue())
+
+        if input_image.content_type not in ['image/png', 'image/jpeg']:
+            return await interaction.response.send_message('画像ファイルをアップロードしてください。', ephemeral=True)
+
+        if input_image.content_type == 'image/png':
+            await input_image.save('./images/input_image.png')
+        else:
+            await input_image.save('./images/input_image.jpg')
+            image = cv2.imread('./images/input_image.jpg')
+            cv2.imwrite('./images/input_image.png', image, [int(cv2.IMWRITE_PNG_COMPRESSION), 1])
+
+        img = cv2.imread('./images/input_image.png', cv2.IMREAD_COLOR)
+        h, w = img.shape[:2]
+        split_x = 6
+        split_y = 6
+        # 画像の分割処理
+        cx = 1
+        cy = 2
+        for j in range(split_x):
+            for i in range(split_y):
+                split_pic = img[cy:cy + int(h / split_y), cx:cx + int(w / split_x), :]
+                cv2.imwrite('./images/split_pic/split_y' + str(i) + '_x' + str(j) + '.jpg', split_pic)
+                cy = cy + int(h / split_y)
+            cy = 0
+            cx = cx + int(w / split_x)
+
+        red_embed.set_image(url=input_image.url)
+
+        return await interaction.response.send_message(embeds=[red_embed, blue_embed])
 
     @app_commands.command(name='ゲーム終了')
     @app_commands.guild_only()
