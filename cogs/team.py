@@ -43,11 +43,11 @@ class Team(commands.Cog):
 
         img = cv2.imread('./images/input_image.png', cv2.IMREAD_COLOR)
         h, w = img.shape[:2]
-        split_x = 6
-        split_y = 6
+        split_x = 1
+        split_y = 2
         # 画像の分割処理
-        cx = 1
-        cy = 2
+        cx = 0
+        cy = 0
         for j in range(split_x):
             for i in range(split_y):
                 split_pic = img[cy:cy + int(h / split_y), cx:cx + int(w / split_x), :]
