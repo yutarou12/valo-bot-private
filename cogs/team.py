@@ -25,7 +25,7 @@ class Team(commands.Cog):
 
     @app_commands.command(name='チーム分け2')
     @app_commands.guild_only()
-    async def cmd_team_2(self, interaction: discord.Interaction, input_image: discord.Attachment):
+    async def cmd_team_2(self, interaction: discord.Interaction, input_image: discord.Attachment, x: int, y: int):
         """画像によるチーム分けを行います。"""
 
         red_embed = discord.Embed(title='アタッカー側', color=discord.Color.red())
@@ -43,8 +43,8 @@ class Team(commands.Cog):
 
         img = cv2.imread('./images/input_image.png', cv2.IMREAD_COLOR)
         h, w = img.shape[:2]
-        split_x = 1
-        split_y = 2
+        split_x = x
+        split_y = y
         # 画像の分割処理
         cx = 0
         cy = 0
