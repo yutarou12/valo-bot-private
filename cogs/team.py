@@ -78,7 +78,6 @@ class Team(commands.Cog):
                 gray_image = image.convert('L')
                 denoised_image = gray_image.filter(ImageFilter.GaussianBlur(radius=1))
                 resized_image = denoised_image.resize((600, int(denoised_image.height * (600 / denoised_image.width))))
-                resized_image.show()
                 text = pytesseract.image_to_string(resized_image, lang='jpn')
                 print(f"Text from {filename}: {text.strip()}")
                 for user_id, name in valo_name_dict.items():
