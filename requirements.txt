@@ -6,3 +6,4 @@ pytz
 numpy
 opencv-python
 pytesseract
+pyocr

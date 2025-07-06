@@ -4,10 +4,16 @@ import os
 import cv2
 from PIL import Image, ImageFilter
 import pytesseract
+import pyocr
 
 import discord
 from discord import app_commands
 from discord.ext import commands
+
+arr_ocr_tool = pyocr.get_available_tools()
+if len(arr_ocr_tool) == 0:
+    print("No OCR tool found")
+ocr_tool = arr_ocr_tool[0]
 
 
 class Team(commands.Cog):
@@ -79,7 +85,11 @@ class Team(commands.Cog):
                 gray_image = image.convert('L')
                 denoised_image = gray_image.filter(ImageFilter.GaussianBlur(radius=1))
                 resized_image = denoised_image.resize((600, int(denoised_image.height * (600 / denoised_image.width))))
-                text = pytesseract.image_to_string(resized_image, lang='jpn')
+                text = ocr_tool.image_to_string(
+                    resized_image,
+                    lang="eng"
+                )
+                # text = pytesseract.image_to_string(resized_image, lang='jpn')
                 print(f"Text from {filename}: {text.strip()}")
                 for user_id, name in valo_name_dict.items():
                     if name in text:
