@@ -87,7 +87,7 @@ class Team(commands.Cog):
                 resized_image = denoised_image.resize((600, int(denoised_image.height * (600 / denoised_image.width))))
                 text = ocr_tool.image_to_string(
                     resized_image,
-                    lang="eng"
+                    lang="jpn"
                 )
                 # text = pytesseract.image_to_string(resized_image, lang='jpn')
                 print(f"Text from {filename}: {text.strip()}")
