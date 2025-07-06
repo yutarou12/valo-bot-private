@@ -29,6 +29,7 @@ class Team(commands.Cog):
     @app_commands.guild_only()
     async def cmd_team_2(self, interaction: discord.Interaction, input_image: discord.Attachment):
         """画像によるチーム分けを行います。"""
+        await interaction.response.defer(ephemeral=True)
 
         ch_id = 1378713691578699837
         second_id = 1378713734624841889
@@ -89,10 +90,10 @@ class Team(commands.Cog):
                                 try:
                                     await member.move_to(blue_ch)
                                 except Exception:
-                                    await interaction.message.channel.send(
+                                    await interaction.followup.send(
                                         f'Error >> {member.mention} は移動できませんでした。')
                             else:
-                                await interaction.message.channel.send(
+                                await interaction.followup.send(
                                     f'Warning >> {member.mention} は自分で{blue_ch.mention}に参加してください。')
 
                         elif filename.endswith('x1.jpg'):
@@ -101,13 +102,13 @@ class Team(commands.Cog):
                                 try:
                                     await member.move_to(red_ch)
                                 except Exception:
-                                    await interaction.message.channel.send(
+                                    await interaction.followup.send(
                                         f'Error >> {member.mention} は移動できませんでした。')
                             else:
-                                await interaction.message.channel.send(
+                                await interaction.followup.send(
                                     f'Warning >> {member.mention} は自分で{red_ch.mention}に参加してください。')
 
-        return await interaction.response.send_message(embeds=[red_embed, blue_embed])
+        return await interaction.followup.send(embeds=[red_embed, blue_embed])
 
     @app_commands.command(name='ゲーム終了')
     @app_commands.guild_only()
