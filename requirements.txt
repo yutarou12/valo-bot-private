@@ -5,3 +5,4 @@ jishaku
 pytz
 numpy
 opencv-python
+pytesseract

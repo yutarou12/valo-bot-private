@@ -1,7 +1,9 @@
 import json
+import os
 
 import cv2
-import numpy as np
+from PIL import Image, ImageFilter
+import pytesseract
 
 import discord
 from discord import app_commands
@@ -25,8 +27,14 @@ class Team(commands.Cog):
 
     @app_commands.command(name='チーム分け2')
     @app_commands.guild_only()
-    async def cmd_team_2(self, interaction: discord.Interaction, input_image: discord.Attachment, x: int, y: int):
+    async def cmd_team_2(self, interaction: discord.Interaction, input_image: discord.Attachment):
         """画像によるチーム分けを行います。"""
+
+        ch_id = 1378713691578699837
+        second_id = 1378713734624841889
+
+        blue_ch: discord.VoiceChannel = interaction.guild.get_channel(ch_id)
+        red_ch: discord.VoiceChannel = interaction.guild.get_channel(second_id)
 
         red_embed = discord.Embed(title='アタッカー側', color=discord.Color.red())
         blue_embed = discord.Embed(title='ディフェンダー側', color=discord.Color.blue())
@@ -41,11 +49,17 @@ class Team(commands.Cog):
             image = cv2.imread('./images/input_image.jpg')
             cv2.imwrite('./images/input_image.png', image, [int(cv2.IMWRITE_PNG_COMPRESSION), 1])
 
-        img = cv2.imread('./images/input_image.png', cv2.IMREAD_COLOR)
+        with open('./data/player_name_list.json', 'r', encoding='utf-8') as d:
+            valo_name_dict = json.load(d)
+
+        img = Image.open('./images/input_image.png')
+        im_crop = img.crop((245, 462, 1160, 786))
+        im_crop.save('images/new_input_image.png', quality=95)
+        img = cv2.imread('./images/new_input_image.png', cv2.IMREAD_COLOR)
         h, w = img.shape[:2]
-        split_x = x
-        split_y = y
-        # 画像の分割処理
+        split_x = 2
+        split_y = 5
+
         cx = 0
         cy = 0
         for j in range(split_x):
@@ -56,7 +70,43 @@ class Team(commands.Cog):
             cy = 0
             cx = cx + int(w / split_x)
 
-        red_embed.set_image(url=input_image.url)
+        for filename in os.listdir('./images/split_pic/'):
+            if filename.lower().endswith(('.png', '.jpg', '.jpeg',)):
+                image_path = os.path.join('./images/split_pic/', filename)
+                image_b = Image.open(image_path)
+                image = image_b.crop((67, 0, image_b.width, image_b.height))
+                gray_image = image.convert('L')
+                denoised_image = gray_image.filter(ImageFilter.GaussianBlur(radius=1))
+                resized_image = denoised_image.resize((600, int(denoised_image.height * (600 / denoised_image.width))))
+                resized_image.show()
+                text = pytesseract.image_to_string(resized_image, lang='jpn')
+                print(f"Text from {filename}: {text.strip()}")
+                for user_id, name in valo_name_dict.items():
+                    if name in text:
+                        member = interaction.guild.get_member(int(user_id))
+                        if filename.endswith('x0.jpg'):
+                            blue_embed.add_field(name=f'・{name}', value=f'{member.mention}', inline=False)
+                            if member.voice:
+                                try:
+                                    await member.move_to(blue_ch)
+                                except Exception:
+                                    await interaction.message.channel.send(
+                                        f'Error >> {member.mention} は移動できませんでした。')
+                            else:
+                                await interaction.message.channel.send(
+                                    f'Warning >> {member.mention} は自分で{blue_ch.mention}に参加してください。')
+
+                        elif filename.endswith('x1.jpg'):
+                            red_embed.add_field(name=f'・{name}', value=f'{member.mention}', inline=False)
+                            if member.voice:
+                                try:
+                                    await member.move_to(red_ch)
+                                except Exception:
+                                    await interaction.message.channel.send(
+                                        f'Error >> {member.mention} は移動できませんでした。')
+                            else:
+                                await interaction.message.channel.send(
+                                    f'Warning >> {member.mention} は自分で{red_ch.mention}に参加してください。')
 
         return await interaction.response.send_message(embeds=[red_embed, blue_embed])
 
