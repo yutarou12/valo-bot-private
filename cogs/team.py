@@ -35,7 +35,7 @@ class Team(commands.Cog):
     @app_commands.guild_only()
     async def cmd_team_2(self, interaction: discord.Interaction, input_image: discord.Attachment):
         """画像によるチーム分けを行います。"""
-        await interaction.response.defer(ephemeral=True)
+        await interaction.response.defer()
 
         ch_id = 1378713691578699837
         second_id = 1378713734624841889
