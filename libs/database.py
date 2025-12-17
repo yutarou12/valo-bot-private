@@ -16,7 +16,7 @@ class ProductionDatabase:
 
         async with self.pool.acquire() as conn:
             await conn.execute(
-                "CREATE TABLE IF NOT EXISTS valo_name_data (guild_id bigint NOT NULL PRIMARY KEY, user_id bigint NOT NULL PRIMARY KEY, valo_name NOT NULL)")
+                "CREATE TABLE IF NOT EXISTS valo_name_data (guild_id bigint NOT NULL, user_id bigint NOT NULL, valo_name TEXT NOT NULL, PRIMARY KEY (guild_id, user_id)")
             await conn.execute(
                 "CREATE TABLE IF NOT EXISTS guild_ch_data (guild_id bigint NOT NULL PRIMARY KEY, ch_first_id bigint NOT NULL, ch_second_id bigint NOT NULL)")
 
