@@ -225,7 +225,37 @@ class MainView(discord.ui.View):
         self.stop()
         red_context = "ㅤ\n".join([self.guild_valo_name_list.get(m.id) if self.guild_valo_name_list.get(m.id) else "登録なし" for m in self.team_list.get("red")]) if self.team_list.get("red") else "なし"
         blue_context = "ㅤ\n".join([self.guild_valo_name_list.get(m.id) if self.guild_valo_name_list.get(m.id) else "登録なし" for m in self.team_list.get("blue")]) if self.team_list.get("blue") else "なし"
-        return await interaction.response.edit_message(content=f'VCを分けました。\n\n>> **アタッカー側**\n{red_context}\n>> **ディフェンダー側**\n{blue_context}', view=None, embed=None)
+
+        view_end = TeamEndView()
+        return await interaction.response.edit_message(content=f'VCを分けました。\n\n>> **アタッカー側**\n{red_context}\n>> **ディフェンダー側**\n{blue_context}', view=view_end, embed=None)
+
+
+class TeamEndView(discord.ui.View):
+    def __init__(self):
+        super().__init__()
+        self.timeout = None
+
+    @discord.ui.button(label='全員集合', style=discord.ButtonStyle.danger, custom_id='team_end_button')
+    async def team_end(self, interaction: discord.Interaction, button: discord.ui.Button):
+        first_ch_id, second_ch_id = await interaction.client.db.get_guild_channel_data(interaction.guild_id)
+        if not first_ch_id or not second_ch_id:
+            return await interaction.response.send_message(
+                '> 音声チャンネルの設定がされていません。サーバー管理者に問い合わせてください。', ephemeral=True)
+
+        red_ch: discord.VoiceChannel = interaction.guild.get_channel(first_ch_id)
+        blue_ch: discord.VoiceChannel = interaction.guild.get_channel(second_ch_id)
+
+        for member in blue_ch.members:
+            if member.voice:
+                try:
+                    await member.move_to(red_ch)
+                except Exception:
+                    await interaction.message.channel.send(f'Error >> {member.mention} は移動できませんでした。')
+            else:
+                await interaction.message.channel.send(f'Warning >> {member.mention} は自分で{red_ch.mention}に参加してください。')
+
+        self.stop()
+        return await interaction.response.edit_message(content='集合！！！！！', view=None, embed=None)
 
 
 async def setup(bot):
