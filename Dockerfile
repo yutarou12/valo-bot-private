@@ -4,9 +4,9 @@ WORKDIR /app
 COPY requirements.txt /app/requirements.txt
 
 RUN apk update && apk add \
-    libopencv-dev \
+    opencv-dev \
     tesseract-ocr \
-    libtesseract-dev \
+    tesseract-ocr-dev \
     && apk clean
 RUN python -m pip install --upgrade pip setuptools wheel
 RUN if [ -f /app/requirements.txt ]; then python -m pip install -r /app/requirements.txt; fi
