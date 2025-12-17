@@ -32,7 +32,7 @@ class Setting(commands.Cog):
             if display_name is None:
                 return await interaction.response.send_message("表示名が登録されていません。表示名を入力してください。", ephemeral=True)
             else:
-                check_text = f'ユーザー：{interaction.user.name}\n表示名：{display_name}'
+                check_text = f'Discord名：{interaction.user.name}\nValorant表示名：{display_name}'
                 embed = discord.Embed(title='表示名登録画面',
                                       description=f'以下の内容で登録しますか？\n```\n{check_text}\n```')
                 ui_id = 1

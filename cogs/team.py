@@ -34,7 +34,7 @@ class Team(commands.Cog):
         first_ch_id, second_ch_id = await self.db.get_guild_channel_data(interaction.guild_id)
 
         view = MainView(guild_valo_name_list=guild_valo_name_list, guild_ch_id=(first_ch_id, second_ch_id))
-        await interaction.response.send_message(embeds=[red_embed, blue_embed], view=view)
+        return await interaction.response.send_message(embeds=[red_embed, blue_embed], view=view)
 
     @app_commands.command(name='チーム分け2')
     @app_commands.guild_only()
