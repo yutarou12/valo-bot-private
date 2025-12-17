@@ -23,7 +23,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRESQL_PASSWORD}
     volumes:
       - ./postgres/init:/docker-entrypoint-initdb.d
-      - ./postgres/data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql
     ports:
       - 5432:5432
     networks:
@@ -32,3 +32,6 @@ services:
 networks:
   app-net:
     driver: bridge
+
+volumes:
+  db-data:
