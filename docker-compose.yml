@@ -14,6 +14,17 @@ services:
     tty: true
     networks:
       - app-net
+  db:
+    restart: always
+    image: postgres:latest
+    container_name: "ValorantBot-DB"
+    volumes:
+      - ./postgres/init:/docker-entrypoint-initdb.d
+      - ./postgres/data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    networks:
+      - app-net
 
 networks:
   app-net:

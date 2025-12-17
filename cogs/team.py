@@ -1,4 +1,3 @@
-import json
 import os
 
 import cv2
@@ -10,6 +9,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from libs.database import Database
+
 arr_ocr_tool = pyocr.get_available_tools()
 if len(arr_ocr_tool) == 0:
     print("No OCR tool found")
@@ -19,6 +20,7 @@ ocr_tool = arr_ocr_tool[0]
 class Team(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.db: Database = bot.db
 
     @app_commands.command(name='チーム分け')
     @app_commands.guild_only()
@@ -28,7 +30,10 @@ class Team(commands.Cog):
         red_embed = discord.Embed(title='アタッカー側', color=discord.Color.red())
         blue_embed = discord.Embed(title='ディフェンダー側', color=discord.Color.blue())
 
-        view = MainView()
+        guild_valo_name_list = await self.db.get_all_names_in_guild(interaction.guild_id)
+        first_ch_id, second_ch_id = await self.db.get_guild_channel_data(interaction.guild_id)
+
+        view = MainView(guild_valo_name_list=guild_valo_name_list, guild_ch_id=(first_ch_id, second_ch_id))
         await interaction.response.send_message(embeds=[red_embed, blue_embed], view=view)
 
     @app_commands.command(name='チーム分け2')
@@ -37,11 +42,12 @@ class Team(commands.Cog):
         """画像によるチーム分けを行います。"""
         await interaction.response.defer()
 
-        ch_id = 1378713691578699837
-        second_id = 1378713734624841889
+        first_ch_id, second_ch_id = await self.db.get_guild_channel_data(interaction.guild_id)
+        if not first_ch_id or not second_ch_id:
+            return await interaction.followup.send('> 音声チャンネルの設定がされていません。サーバー管理者に問い合わせてください。', ephemeral=True)
 
-        blue_ch: discord.VoiceChannel = interaction.guild.get_channel(ch_id)
-        red_ch: discord.VoiceChannel = interaction.guild.get_channel(second_id)
+        red_ch: discord.VoiceChannel = interaction.guild.get_channel(first_ch_id)
+        blue_ch: discord.VoiceChannel = interaction.guild.get_channel(second_ch_id)
 
         red_embed = discord.Embed(title='アタッカー側', color=discord.Color.red())
         blue_embed = discord.Embed(title='ディフェンダー側', color=discord.Color.blue())
@@ -56,8 +62,7 @@ class Team(commands.Cog):
             image = cv2.imread('./images/input_image.jpg')
             cv2.imwrite('./images/input_image.png', image, [int(cv2.IMWRITE_PNG_COMPRESSION), 1])
 
-        with open('./data/player_name_list.json', 'r', encoding='utf-8') as d:
-            valo_name_dict = json.load(d)
+        guild_valo_name_list = await self.db.get_all_names_in_guild(interaction.guild_id)
 
         img = Image.open('./images/input_image.png')
         im_crop = img.crop((245, 462, 1160, 786))
@@ -91,9 +96,9 @@ class Team(commands.Cog):
                 )
                 # text = pytesseract.image_to_string(resized_image, lang='jpn')
                 print(f"Text from {filename}: {text.strip()}")
-                for user_id, name in valo_name_dict.items():
+                for user_id, name in guild_valo_name_list.items():
                     if name in text:
-                        member = interaction.guild.get_member(int(user_id))
+                        member = interaction.guild.get_member(user_id)
                         if filename.endswith('x0.jpg'):
                             blue_embed.add_field(name=f'・{name}', value=f'{member.mention}', inline=False)
                             if member.voice:
@@ -123,32 +128,32 @@ class Team(commands.Cog):
     @app_commands.command(name='ゲーム終了')
     @app_commands.guild_only()
     async def cmd_end(self, interaction: discord.Interaction):
-        """VCを終了"""
+        """1つのチャンネルに全員戻ってきます。"""
+        first_ch_id, second_ch_id = await self.db.get_guild_channel_data(interaction.guild_id)
+        if not first_ch_id or not second_ch_id:
+            return await interaction.followup.send(
+                '> 音声チャンネルの設定がされていません。サーバー管理者に問い合わせてください。', ephemeral=True)
 
-        ch_id = 1378713691578699837
-        second_id = 1378713734624841889
+        red_ch: discord.VoiceChannel = interaction.guild.get_channel(first_ch_id)
+        blue_ch: discord.VoiceChannel = interaction.guild.get_channel(second_ch_id)
 
-        vc_ch: discord.VoiceChannel = interaction.guild.get_channel(ch_id)
-        second_id_ch: discord.VoiceChannel = interaction.guild.get_channel(second_id)
-
-        for member in second_id_ch.members:
+        for member in blue_ch.members:
             if member.voice:
                 try:
-                    await member.move_to(vc_ch)
+                    await member.move_to(red_ch)
                 except Exception:
                     await interaction.message.channel.send(f'Error >> {member.mention} は移動できませんでした。')
             else:
-                await interaction.message.channel.send(f'Warning >> {member.mention} は自分で{vc_ch.mention}に参加してください。')
+                await interaction.message.channel.send(f'Warning >> {member.mention} は自分で{red_ch.mention}に参加してください。')
 
         return await interaction.response.send_message('集合！！！！！')
 
 
 class MainView(discord.ui.View):
-    def __init__(self):
+    def __init__(self, guild_valo_name_list, guild_ch_id):
         self.team_list = {"red": [], "blue": []}
-        with open('./data/player_name_list.json', 'r', encoding='utf-8') as d:
-            valo_name_dict = json.load(d)
-        self.valo_name_dict = valo_name_dict
+        self.guild_valo_name_list = guild_valo_name_list
+        self.guild_ch_id = guild_ch_id
         super().__init__()
         self.timeout = None
 
@@ -163,16 +168,17 @@ class MainView(discord.ui.View):
 
         old_red_embed.clear_fields()
         for user in self.team_list["red"]:
-            old_red_embed.add_field(name=f'・{self.valo_name_dict.get(str(user.id))}', value=f'{user.mention}', inline=False)
+            user_valo_name = self.guild_valo_name_list.get(user.id)
+            old_red_embed.add_field(name=f'・{user_valo_name if user_valo_name else "登録なし"}', value=f'{user.mention}', inline=False)
 
         if interaction.user in self.team_list["blue"]:
             old_blue_embed.clear_fields()
             self.team_list["blue"].remove(interaction.user)
             for user in self.team_list["blue"]:
-                old_blue_embed.add_field(name=f'・{self.valo_name_dict.get(str(user.id))}', value=f'{user.mention}', inline=False)
+                user_valo_name = self.guild_valo_name_list.get(user.id)
+                old_blue_embed.add_field(name=f'・{user_valo_name if user_valo_name else "登録なし"}', value=f'{user.mention}', inline=False)
 
-        await interaction.message.edit(embeds=[old_red_embed, old_blue_embed], view=self)
-        return True
+        return await interaction.message.edit(embeds=[old_red_embed, old_blue_embed], view=self)
 
     @discord.ui.button(label='ディフェンダー側', style=discord.ButtonStyle.primary, custom_id='team_defend_button')
     async def team_defend_button(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -185,20 +191,26 @@ class MainView(discord.ui.View):
 
         old_blue_embed.clear_fields()
         for user in self.team_list["blue"]:
-            old_blue_embed.add_field(name=f'・{self.valo_name_dict.get(str(user.id))}', value=f'{user.mention}', inline=False)
+            user_valo_name = self.guild_valo_name_list.get(user.id)
+            old_blue_embed.add_field(name=f'・{user_valo_name if user_valo_name else "登録なし"}', value=f'{user.mention}', inline=False)
 
         if interaction.user in self.team_list["red"]:
             old_red_embed.clear_fields()
             self.team_list["red"].remove(interaction.user)
             for user in self.team_list["red"]:
-                old_red_embed.add_field(name=f'・{self.valo_name_dict.get(str(user.id))}', value=f'{user.mention}', inline=False)
+                user_valo_name = self.guild_valo_name_list.get(user.id)
+                old_red_embed.add_field(name=f'・{user_valo_name if user_valo_name else "登録なし"}', value=f'{user.mention}', inline=False)
 
-        await interaction.message.edit(embeds=[old_red_embed, old_blue_embed], view=self)
-        return True
+        return await interaction.message.edit(embeds=[old_red_embed, old_blue_embed], view=self)
 
     @discord.ui.button(label='VCを分ける', style=discord.ButtonStyle.danger, custom_id='team_end_button')
     async def team_wakeru(self, interaction: discord.Interaction, button: discord.ui.Button):
-        ch_id = {"red": 1378713691578699837, "blue": 1378713734624841889}
+        first_ch_id, second_ch_id = self.guild_ch_id
+        if not first_ch_id or not second_ch_id:
+            return await interaction.followup.send(
+                '> 音声チャンネルの設定がされていません。サーバー管理者に問い合わせてください。', ephemeral=True)
+
+        ch_id = {"red": first_ch_id, "blue": second_ch_id}
 
         for color in ["red", "blue"]:
             for member in self.team_list[color]:
@@ -211,8 +223,8 @@ class MainView(discord.ui.View):
                 else:
                     await interaction.message.channel.send(f'Warning >> {member.mention} は自分で{vc_ch.mention}に参加してください。')
         self.stop()
-        red_context = "ㅤ\n".join([self.valo_name_dict.get(str(m.id)) for m in self.team_list.get("red")]) if self.team_list.get("red") else "なし"
-        blue_context = "ㅤ\n".join([self.valo_name_dict.get(str(m.id)) for m in self.team_list.get("blue")]) if self.team_list.get("blue") else "なし"
+        red_context = "ㅤ\n".join([self.guild_valo_name_list.get(m.id) if self.guild_valo_name_list.get(m.id) else "登録なし" for m in self.team_list.get("red")]) if self.team_list.get("red") else "なし"
+        blue_context = "ㅤ\n".join([self.guild_valo_name_list.get(m.id) if self.guild_valo_name_list.get(m.id) else "登録なし" for m in self.team_list.get("blue")]) if self.team_list.get("blue") else "なし"
         return await interaction.response.send_message(f'VCを分けました。\n\n>> **アタッカー側**\n{red_context}\n>> **ディフェンダー側**\n{blue_context}')
 
 
