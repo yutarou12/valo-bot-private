@@ -225,7 +225,7 @@ class MainView(discord.ui.View):
         self.stop()
         red_context = "ㅤ\n".join([self.guild_valo_name_list.get(m.id) if self.guild_valo_name_list.get(m.id) else "登録なし" for m in self.team_list.get("red")]) if self.team_list.get("red") else "なし"
         blue_context = "ㅤ\n".join([self.guild_valo_name_list.get(m.id) if self.guild_valo_name_list.get(m.id) else "登録なし" for m in self.team_list.get("blue")]) if self.team_list.get("blue") else "なし"
-        return await interaction.response.send_message(f'VCを分けました。\n\n>> **アタッカー側**\n{red_context}\n>> **ディフェンダー側**\n{blue_context}')
+        return await interaction.response.edit_message(f'VCを分けました。\n\n>> **アタッカー側**\n{red_context}\n>> **ディフェンダー側**\n{blue_context}', view=None, embeds=[])
 
 
 async def setup(bot):
