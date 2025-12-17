@@ -11,7 +11,7 @@ class Setting(commands.Cog):
         self.db: Database = bot.db
 
     @app_commands.command(name="表示名設定")
-    @app_commands.rename(display_name='Valorant名')
+    @app_commands.rename(display_name='valorant_name')
     async def setting_display_name(self, interaction: discord.Interaction, display_name: str | None = None):
         """コマンドを実行したときにでるValorantの表示名を設定します。"""
         db_display_name = await self.db.get_name_from_user(interaction.user.id, interaction.guild_id)
@@ -51,7 +51,7 @@ class Setting(commands.Cog):
 
     @app_commands.command(name="音声チャンネル設定")
     @app_commands.checks.has_permissions(administrator=True)
-    @app_commands.rename(first_voice_channel='アタッカー側チャンネル', second_voice_channel='ディフェンダー側チャンネル')
+    @app_commands.describe(first_voice_channel='アタッカー側チャンネル', second_voice_channel='ディフェンダー側チャンネル')
     async def setting_voice_channel(self, interaction: discord.Interaction, first_voice_channel: discord.VoiceChannel, second_voice_channel: discord.VoiceChannel):
         """音声チャンネルを設定します。"""
         await self.db.set_guild_channel_data(interaction.guild_id, first_voice_channel.id, second_voice_channel.id)
