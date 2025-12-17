@@ -18,22 +18,22 @@ class Setting(commands.Cog):
 
         if db_display_name:
             if display_name is None:
-                embed = discord.Embed(title='表示名登録解除画面',
+                embed = discord.Embed(title='Valorant表示名解除画面',
                                       description=f'登録を解除しますか？')
-                embed.add_field(name='現在の表示名', value=f'`{db_display_name}`', inline=False)
+                embed.add_field(name='現在のValorant表示名', value=f'`{db_display_name}`', inline=False)
                 ui_id = 0
             else:
-                embed = discord.Embed(title='表示名変更画面',
-                                      description=f'表示名を変更しますか？')
-                embed.add_field(name='現在の表示名', value=f'`{db_display_name}`', inline=False)
-                embed.add_field(name='新しい表示名', value=f'`{display_name}`', inline=False)
+                embed = discord.Embed(title='Valorant表示名変更画面',
+                                      description=f'Valorant表示名を変更しますか？')
+                embed.add_field(name='現在のValorant表示名', value=f'`{db_display_name}`', inline=False)
+                embed.add_field(name='新しいValorant表示名', value=f'`{display_name}`', inline=False)
                 ui_id = 1
         else:
             if display_name is None:
-                return await interaction.response.send_message("表示名が登録されていません。表示名を入力してください。", ephemeral=True)
+                return await interaction.response.send_message("Valorant表示名が登録されていません。Valorant表示名を入力してください。", ephemeral=True)
             else:
-                check_text = f'Discord名：{interaction.user.name}\nValorant表示名：{display_name}'
-                embed = discord.Embed(title='表示名登録画面',
+                check_text = f'DiscordID：{interaction.user.name}\nValorant表示名：{display_name}'
+                embed = discord.Embed(title='Valorant表示名登録画面',
                                       description=f'以下の内容で登録しますか？\n```\n{check_text}\n```')
                 ui_id = 1
 
