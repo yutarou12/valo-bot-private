@@ -178,7 +178,7 @@ class MainView(discord.ui.View):
                 user_valo_name = self.guild_valo_name_list.get(user.id)
                 old_blue_embed.add_field(name=f'・{user_valo_name if user_valo_name else "登録なし"}', value=f'{user.mention}', inline=False)
 
-        return await interaction.message.edit(embeds=[old_red_embed, old_blue_embed], view=self)
+        return await interaction.response.edit_message(embeds=[old_red_embed, old_blue_embed], view=self)
 
     @discord.ui.button(label='ディフェンダー側', style=discord.ButtonStyle.primary, custom_id='team_defend_button')
     async def team_defend_button(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -201,7 +201,7 @@ class MainView(discord.ui.View):
                 user_valo_name = self.guild_valo_name_list.get(user.id)
                 old_red_embed.add_field(name=f'・{user_valo_name if user_valo_name else "登録なし"}', value=f'{user.mention}', inline=False)
 
-        return await interaction.message.edit(embeds=[old_red_embed, old_blue_embed], view=self)
+        return await interaction.response.edit_message(embeds=[old_red_embed, old_blue_embed], view=self)
 
     @discord.ui.button(label='VCを分ける', style=discord.ButtonStyle.danger, custom_id='team_end_button')
     async def team_wakeru(self, interaction: discord.Interaction, button: discord.ui.Button):
