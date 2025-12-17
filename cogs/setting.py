@@ -80,3 +80,7 @@ class ValorantNameCheckView(discord.ui.View):
         await interaction.response.edit_message(content='キャンセルしました', embed=None, view=None)
         self.value = False
         self.stop()
+
+
+async def setup(bot):
+    await bot.add_cog(Setting(bot))
