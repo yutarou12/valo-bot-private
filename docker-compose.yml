@@ -18,6 +18,9 @@ services:
     restart: always
     image: postgres:latest
     container_name: "ValorantBot-DB"
+    environment:
+      POSTGRES_USER: ${POSTGRESQL_USER}
+      POSTGRES_PASSWORD: ${POSTGRESQL_PASSWORD}
     volumes:
       - ./postgres/init:/docker-entrypoint-initdb.d
       - ./postgres/data:/var/lib/postgresql/data
