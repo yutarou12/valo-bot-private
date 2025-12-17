@@ -207,7 +207,7 @@ class MainView(discord.ui.View):
     async def team_wakeru(self, interaction: discord.Interaction, button: discord.ui.Button):
         first_ch_id, second_ch_id = self.guild_ch_id
         if not first_ch_id or not second_ch_id:
-            return await interaction.followup.send(
+            return await interaction.response.send_message(
                 '> 音声チャンネルの設定がされていません。サーバー管理者に問い合わせてください。', ephemeral=True)
 
         ch_id = {"red": first_ch_id, "blue": second_ch_id}
@@ -225,7 +225,7 @@ class MainView(discord.ui.View):
         self.stop()
         red_context = "ㅤ\n".join([self.guild_valo_name_list.get(m.id) if self.guild_valo_name_list.get(m.id) else "登録なし" for m in self.team_list.get("red")]) if self.team_list.get("red") else "なし"
         blue_context = "ㅤ\n".join([self.guild_valo_name_list.get(m.id) if self.guild_valo_name_list.get(m.id) else "登録なし" for m in self.team_list.get("blue")]) if self.team_list.get("blue") else "なし"
-        return await interaction.response.edit_message(f'VCを分けました。\n\n>> **アタッカー側**\n{red_context}\n>> **ディフェンダー側**\n{blue_context}', view=None, embeds=[])
+        return await interaction.response.edit_message(content=f'VCを分けました。\n\n>> **アタッカー側**\n{red_context}\n>> **ディフェンダー側**\n{blue_context}', view=None, embeds=None)
 
 
 async def setup(bot):
