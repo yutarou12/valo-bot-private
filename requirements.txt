@@ -1,10 +1,6 @@
-pillow
 discord.py
 python-dotenv
 jishaku
 pytz
 numpy
-opencv-python
-pytesseract
-pyocr
 asyncpg

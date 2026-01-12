@@ -1,9 +1,9 @@
-import os
+# import os
 
-import cv2
-from PIL import Image, ImageFilter
-import pytesseract
-import pyocr
+# import cv2
+# from PIL import Image, ImageFilter
+# import pytesseract
+# import pyocr
 
 import discord
 from discord import app_commands
@@ -11,10 +11,10 @@ from discord.ext import commands
 
 from libs.database import Database
 
-arr_ocr_tool = pyocr.get_available_tools()
-if len(arr_ocr_tool) == 0:
-    print("No OCR tool found")
-ocr_tool = arr_ocr_tool[0]
+# arr_ocr_tool = pyocr.get_available_tools()
+# if len(arr_ocr_tool) == 0:
+#     print("No OCR tool found")
+# ocr_tool = arr_ocr_tool[0]
 
 
 class Team(commands.Cog):
@@ -36,94 +36,94 @@ class Team(commands.Cog):
         view = MainView(guild_valo_name_list=guild_valo_name_list, guild_ch_id=(first_ch_id, second_ch_id))
         return await interaction.response.send_message(embeds=[red_embed, blue_embed], view=view)
 
-    @app_commands.command(name='チーム分け2')
-    @app_commands.guild_only()
-    async def cmd_team_2(self, interaction: discord.Interaction, input_image: discord.Attachment):
-        """画像によるチーム分けを行います。"""
-        await interaction.response.defer()
-
-        first_ch_id, second_ch_id = await self.db.get_guild_channel_data(interaction.guild_id)
-        if not first_ch_id or not second_ch_id:
-            return await interaction.followup.send('> 音声チャンネルの設定がされていません。サーバー管理者に問い合わせてください。', ephemeral=True)
-
-        red_ch: discord.VoiceChannel = interaction.guild.get_channel(first_ch_id)
-        blue_ch: discord.VoiceChannel = interaction.guild.get_channel(second_ch_id)
-
-        red_embed = discord.Embed(title='アタッカー側', color=discord.Color.red())
-        blue_embed = discord.Embed(title='ディフェンダー側', color=discord.Color.blue())
-
-        if input_image.content_type not in ['image/png', 'image/jpeg']:
-            return await interaction.response.send_message('画像ファイルをアップロードしてください。', ephemeral=True)
-
-        if input_image.content_type == 'image/png':
-            await input_image.save('./images/input_image.png')
-        else:
-            await input_image.save('./images/input_image.jpg')
-            image = cv2.imread('./images/input_image.jpg')
-            cv2.imwrite('./images/input_image.png', image, [int(cv2.IMWRITE_PNG_COMPRESSION), 1])
-
-        guild_valo_name_list = await self.db.get_all_names_in_guild(interaction.guild_id)
-
-        img = Image.open('./images/input_image.png')
-        im_crop = img.crop((245, 462, 1160, 786))
-        im_crop.save('images/new_input_image.png', quality=95)
-        img = cv2.imread('./images/new_input_image.png', cv2.IMREAD_COLOR)
-        h, w = img.shape[:2]
-        split_x = 2
-        split_y = 5
-
-        cx = 0
-        cy = 0
-        for j in range(split_x):
-            for i in range(split_y):
-                split_pic = img[cy:cy + int(h / split_y), cx:cx + int(w / split_x), :]
-                cv2.imwrite('./images/split_pic/split_y' + str(i) + '_x' + str(j) + '.jpg', split_pic)
-                cy = cy + int(h / split_y)
-            cy = 0
-            cx = cx + int(w / split_x)
-
-        for filename in os.listdir('./images/split_pic/'):
-            if filename.lower().endswith(('.png', '.jpg', '.jpeg',)):
-                image_path = os.path.join('./images/split_pic/', filename)
-                image_b = Image.open(image_path)
-                image = image_b.crop((67, 0, image_b.width, image_b.height))
-                gray_image = image.convert('L')
-                denoised_image = gray_image.filter(ImageFilter.GaussianBlur(radius=1))
-                resized_image = denoised_image.resize((600, int(denoised_image.height * (600 / denoised_image.width))))
-                text = ocr_tool.image_to_string(
-                    resized_image,
-                    lang="jpn"
-                )
-                # text = pytesseract.image_to_string(resized_image, lang='jpn')
-                print(f"Text from {filename}: {text.strip()}")
-                for user_id, name in guild_valo_name_list.items():
-                    if name in text:
-                        member = interaction.guild.get_member(user_id)
-                        if filename.endswith('x0.jpg'):
-                            blue_embed.add_field(name=f'・{name}', value=f'{member.mention}', inline=False)
-                            if member.voice:
-                                try:
-                                    await member.move_to(blue_ch)
-                                except Exception:
-                                    await interaction.followup.send(
-                                        f'Error >> {member.mention} は移動できませんでした。')
-                            else:
-                                await interaction.followup.send(
-                                    f'Warning >> {member.mention} は自分で{blue_ch.mention}に参加してください。')
-
-                        elif filename.endswith('x1.jpg'):
-                            red_embed.add_field(name=f'・{name}', value=f'{member.mention}', inline=False)
-                            if member.voice:
-                                try:
-                                    await member.move_to(red_ch)
-                                except Exception:
-                                    await interaction.followup.send(
-                                        f'Error >> {member.mention} は移動できませんでした。')
-                            else:
-                                await interaction.followup.send(
-                                    f'Warning >> {member.mention} は自分で{red_ch.mention}に参加してください。')
-
-        return await interaction.followup.send(embeds=[red_embed, blue_embed])
+    # @app_commands.command(name='チーム分け2')
+    # @app_commands.guild_only()
+    # async def cmd_team_2(self, interaction: discord.Interaction, input_image: discord.Attachment):
+    #     """画像によるチーム分けを行います。"""
+    #     await interaction.response.defer()
+    #
+    #     first_ch_id, second_ch_id = await self.db.get_guild_channel_data(interaction.guild_id)
+    #     if not first_ch_id or not second_ch_id:
+    #         return await interaction.followup.send('> 音声チャンネルの設定がされていません。サーバー管理者に問い合わせてください。', ephemeral=True)
+    #
+    #     red_ch: discord.VoiceChannel = interaction.guild.get_channel(first_ch_id)
+    #     blue_ch: discord.VoiceChannel = interaction.guild.get_channel(second_ch_id)
+    #
+    #     red_embed = discord.Embed(title='アタッカー側', color=discord.Color.red())
+    #     blue_embed = discord.Embed(title='ディフェンダー側', color=discord.Color.blue())
+    #
+    #     if input_image.content_type not in ['image/png', 'image/jpeg']:
+    #         return await interaction.response.send_message('画像ファイルをアップロードしてください。', ephemeral=True)
+    #
+    #     if input_image.content_type == 'image/png':
+    #         await input_image.save('./images/input_image.png')
+    #     else:
+    #         await input_image.save('./images/input_image.jpg')
+    #         image = cv2.imread('./images/input_image.jpg')
+    #         cv2.imwrite('./images/input_image.png', image, [int(cv2.IMWRITE_PNG_COMPRESSION), 1])
+    #
+    #     guild_valo_name_list = await self.db.get_all_names_in_guild(interaction.guild_id)
+    #
+    #     img = Image.open('./images/input_image.png')
+    #     im_crop = img.crop((245, 462, 1160, 786))
+    #     im_crop.save('images/new_input_image.png', quality=95)
+    #     img = cv2.imread('./images/new_input_image.png', cv2.IMREAD_COLOR)
+    #     h, w = img.shape[:2]
+    #     split_x = 2
+    #     split_y = 5
+    #
+    #     cx = 0
+    #     cy = 0
+    #     for j in range(split_x):
+    #         for i in range(split_y):
+    #             split_pic = img[cy:cy + int(h / split_y), cx:cx + int(w / split_x), :]
+    #             cv2.imwrite('./images/split_pic/split_y' + str(i) + '_x' + str(j) + '.jpg', split_pic)
+    #             cy = cy + int(h / split_y)
+    #         cy = 0
+    #         cx = cx + int(w / split_x)
+    #
+    #     for filename in os.listdir('./images/split_pic/'):
+    #         if filename.lower().endswith(('.png', '.jpg', '.jpeg',)):
+    #             image_path = os.path.join('./images/split_pic/', filename)
+    #             image_b = Image.open(image_path)
+    #             image = image_b.crop((67, 0, image_b.width, image_b.height))
+    #             gray_image = image.convert('L')
+    #             denoised_image = gray_image.filter(ImageFilter.GaussianBlur(radius=1))
+    #             resized_image = denoised_image.resize((600, int(denoised_image.height * (600 / denoised_image.width))))
+    #             text = ocr_tool.image_to_string(
+    #                 resized_image,
+    #                 lang="jpn"
+    #             )
+    #             # text = pytesseract.image_to_string(resized_image, lang='jpn')
+    #             print(f"Text from {filename}: {text.strip()}")
+    #             for user_id, name in guild_valo_name_list.items():
+    #                 if name in text:
+    #                     member = interaction.guild.get_member(user_id)
+    #                     if filename.endswith('x0.jpg'):
+    #                         blue_embed.add_field(name=f'・{name}', value=f'{member.mention}', inline=False)
+    #                         if member.voice:
+    #                             try:
+    #                                 await member.move_to(blue_ch)
+    #                             except Exception:
+    #                                 await interaction.followup.send(
+    #                                     f'Error >> {member.mention} は移動できませんでした。')
+    #                         else:
+    #                             await interaction.followup.send(
+    #                                 f'Warning >> {member.mention} は自分で{blue_ch.mention}に参加してください。')
+    #
+    #                     elif filename.endswith('x1.jpg'):
+    #                         red_embed.add_field(name=f'・{name}', value=f'{member.mention}', inline=False)
+    #                         if member.voice:
+    #                             try:
+    #                                 await member.move_to(red_ch)
+    #                             except Exception:
+    #                                 await interaction.followup.send(
+    #                                     f'Error >> {member.mention} は移動できませんでした。')
+    #                         else:
+    #                             await interaction.followup.send(
+    #                                 f'Warning >> {member.mention} は自分で{red_ch.mention}に参加してください。')
+    #
+    #     return await interaction.followup.send(embeds=[red_embed, blue_embed])
 
     @app_commands.command(name='ゲーム終了')
     @app_commands.guild_only()
