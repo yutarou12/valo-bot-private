@@ -1,9 +1,17 @@
-FROM python:3.10-alpine
-
+FROM python:3.10-slim-bullseye as builder
 WORKDIR /app
-COPY requirements.txt /app/requirements.txt
+COPY requirements.txt .
 
-RUN python -m pip install --upgrade pip setuptools wheel
-RUN if [ -f /app/requirements.txt ]; then python -m pip install -r /app/requirements.txt; fi
+RUN pip install --upgrade pip setuptools wheel
+RUN pip install --no-cache-dir -r requirements.txt
+
+FROM python:3.10-slim-bullseye as runtime
+WORKDIR /app
+
+ENV TZ Asia/Tokyo
+
+# builderから必要な内容をコピー
+COPY --from=builder /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
 
 ENTRYPOINT ["python", "main.py"]

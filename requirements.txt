@@ -2,5 +2,4 @@ discord.py
 python-dotenv
 jishaku
 pytz
-numpy
 asyncpg
